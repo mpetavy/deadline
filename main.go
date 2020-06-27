@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	ciddr    = ":443"
+	ciddr    = ":8443"
 	keyInHex = "2d2d2d2d2d424547494e2050524956415445204b45592d2d2d2d2d0d0a4d494945764149424144414e42676b71686b6947397730424151454641415343424b59776767536941674541416f49424151444f4259315353616b386c7955530d0a384f597252477334314b7456554c647439516e71597169555636465a4e4b764f7a6c56717274506e76355a564d4a5462334d75326a4f2f54694b32366b5647440d0a2f584b61436b564e6b7647687a4e514736467a426a4d67734d72616f5a59472f49523744333663724847344553717251713645326647706c4766716d526643370d0a4c53744f487a364a4f476250715670346c645a546d70335334565857786a73326e4a4d3637576d577061436975566351376a703976576f50325657664659426a0d0a447a49547633574d6f477451466c42614947307934395a68626e32793056414e304c4b6c4775476244386b6543764a66372b65414b5a6a7668746364612b586b0d0a72496d4e51544a4d4f624c2b6e5455305a7771666a4574754c46736336696a306f5278384543584475585a73537731536b784e4c4d494576315843577531434d0d0a31447042626b4b2f41674d4241414543676745414555596e356b6c6b316a363644672b437a5166736b5a524c56566a794f46622b594e6571324e314d477757750d0a6a6957417866516f73" +
 		"6c712f43522b4d7136366b716762424b525268744b33776a73655762314944493544356a35357a2f4b7849387257534a78714e6443736d0d0a714e626e464864524e6530705546544f593761775372673931344a4a494e336d5a4674534d5465766236503641746c7053346b4d736d2f5a596441672b5750350d0a422f663177736b69356944684d582f3364773532454830574d5743554e3256414a2f696d316e365732616e6c3054494f4a69774d30336a732b767a61367048650d0a59443347345366702f5a53303573576f2f7846796677384245565673655535736d70545852775379544f484d763178714835584c4f4b367845615173386c42560d0a4b6b77676f794849364c334b6975756d6a45396656667a6a5a686968682f443241616570753262446d514b426751447a2b4e3662476e73693468744f3347394a0d0a36743870776d39475565346f764f367131377132396f726d31426751322f516462674c785641417442336436544939586b566c516f744a58756562537a3674510d0a66763971674d6c6b5a6552413965367a49416668553457526b5270557448584c3047476875583546696954363532316b456f657833726b6747417437593353670d0a2b314749645a3474774252616b536434474b7556775a514d41774b42675144594c626464797735455553486178596c" +
 		"5275593874477945616f726a564e4e4c440d0a6d5030374748726a6c343970697a4e54775a493770666833466c4f36504a3544664d6b4c7231487853416f394151376f44585470506e716457433637544279670d0a50387a325544434164786d442b4d4872766b2f7070536c356a5944394f3839777133417166326b7767634f35554150484a47367a304a4f45366477482b4f48350d0a79437747684755586c514b426748516a767553624949386b6a39646b7646323176334b447172455241347a46452b436b5062416e6755774e487a2b33565768460d0a48495742645776364a2f684352654a72774e6251433833544933797265325167634c706b674871597671586c375447385238514f484947465438474f2f7078390d0a6f4678366a772f506958636667455770524974352b5371384234732f64782f44513762774e744b556f35765269625a3047417038556c7539416f4741427554650d0a5669566c6e525168536b4c47634537456e43476a5771415a324f4c495865694247754e61392b736262626738754d305268736c794e516f4850596331584e32620d0a343732426c58704171565668546c4576693069737a4676466b622b4a6f69716d744b77312f384c4d6b344c5a5846564459795962506e3865762f537156754f410d0a766a6f313970414d31396f505a4d6871703131" +
@@ -82,41 +82,37 @@ func NewServer(ctx context.Context, useTls bool) error {
 		log.Printf("TLS server: listen")
 		ln, err := tls.Listen("tcp", ciddr, tlsConfig)
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
 		defer func() {
 			err := ln.Close()
 			if err != nil {
-				log.Println(err)
+				panic(err)
 			}
 		}()
 
 		log.Printf("TLS server: listen accept ...")
 		conn, err = ln.Accept()
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
 	} else {
 		log.Printf("server: listen")
 		ln, err := net.Listen("tcp", ciddr)
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
 		defer func() {
 			err := ln.Close()
 			if err != nil {
-				log.Println(err)
+				panic(err)
 			}
 		}()
 
 		log.Printf("server: listen accept ...")
 		conn, err = ln.Accept()
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
 	}
 
@@ -124,21 +120,16 @@ func NewServer(ctx context.Context, useTls bool) error {
 	case <-ctx.Done():
 		err := conn.Close()
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
 	default:
 		log.Printf("server read and discard ...")
 
-		n,err := io.Copy(ioutil.Discard, conn)
-		if n > 0 {
-			log.Printf("server bytes read: %d",n)
-
-		}
+		n, err := io.Copy(ioutil.Discard, conn)
 		if err != nil {
-			log.Println(err)
-			return err
+			panic(err)
 		}
+		log.Printf("server bytes read: %d", n)
 	}
 
 	return nil
@@ -149,14 +140,13 @@ func main() {
 
 	for {
 		log.Printf("--------------------------------")
-		log.Printf("Test with TLS = %v",useTls)
+		log.Printf("Test with TLS = %v", useTls)
 
-		ctx,cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(context.Background())
 
 		go func() {
-			err := NewServer(ctx,useTls)
+			err := NewServer(ctx, useTls)
 			if err != nil {
-				log.Println(err)
 				panic(err)
 			}
 		}()
@@ -171,13 +161,13 @@ func main() {
 
 			config := &tls.Config{
 				InsecureSkipVerify: true,
+				MaxVersion:         tls.VersionTLS12,
 			}
 
 			log.Printf("Dial TLS to server ... ")
 
 			conn, err = tls.Dial("tcp", ciddr, config)
 			if err != nil {
-				log.Println(err)
 				panic(err)
 			}
 		} else {
@@ -185,9 +175,8 @@ func main() {
 
 			log.Printf("Dial to server ... ")
 
-			conn,err = net.Dial("tcp",ciddr)
+			conn, err = net.Dial("tcp", ciddr)
 			if err != nil {
-				log.Println(err)
 				panic(err)
 			}
 		}
@@ -195,18 +184,17 @@ func main() {
 		log.Printf("Connection established")
 
 		for i := 0; i < 5; i++ {
-			log.Printf("loop %v: setDeadline",i)
+			log.Printf("loop %v: setDeadline", i)
 			conn.SetDeadline(time.Now().Add(time.Second))
 
-			n,err := io.Copy(conn,ZeroReader{})
-			log.Printf("loop %v: bytes written: %d",i,n)
+			n, err := io.Copy(conn, ZeroReader{})
+			log.Printf("loop %v: bytes written: %d", i, n)
 			if err != nil {
 				neterr, ok := err.(net.Error)
 
 				if !ok || neterr.Timeout() {
 					continue
 				}
-				log.Println(err)
 				panic(err)
 			}
 
@@ -215,7 +203,6 @@ func main() {
 		log.Printf("Connection close")
 		err := conn.Close()
 		if err != nil {
-			log.Println(err)
 			panic(err)
 		}
 
