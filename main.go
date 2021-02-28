@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"time"
@@ -125,7 +124,7 @@ func NewServer(ctx context.Context, useTls bool) error {
 	default:
 		log.Printf("server read and discard ...")
 
-		n, err := io.Copy(ioutil.Discard, conn)
+		n, err := io.Copy(io.Discard, conn)
 		if err != nil {
 			panic(err)
 		}
